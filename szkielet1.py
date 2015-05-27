@@ -5,8 +5,8 @@ import gdata.spreadsheet.service
 from random import randint
 
 # connect to google spreadsheet
-email = '@gmail.com'
-password = ''
+email = 'Zachariasz19800@gmail.com'
+password = '1980Zachariasza'
 spr_client = gdata.spreadsheet.service.SpreadsheetsService()
 spr_client.email = email
 spr_client.password = password
