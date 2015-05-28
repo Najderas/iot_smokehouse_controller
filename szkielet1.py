@@ -80,6 +80,8 @@ while True:
         # work on lastPrefferedTempperatureValueColumn and lastPrefferedTempperatureTimeLeftColumn
         # do the same as in case of connection to internet ()it should be separate function probably)
     
+    # 4 move valve (servo on Copernicus) to the prescaled value (from airFlowLevel variable)
+    serial.write(milijonpińcetjednostekobjetości)
 
 
     
