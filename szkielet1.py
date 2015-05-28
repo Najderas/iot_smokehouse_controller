@@ -3,6 +3,7 @@
 import time
 import gdata.spreadsheet.service
 from random import randint
+from pseudo_pid_controller import PID
 
 #### INITIALIZE #####
 # connect to google spreadsheet
@@ -20,6 +21,9 @@ worksheets_feed = spr_client.GetWorksheetsFeed(key)
 # configure copernicus board
 # serial = s.Serial('/dev/ttyS0', 38400, timeout=1)
 # serial.write(chr(128+4))    #automatic update: knob position (as temperature value)
+
+# INITIALIZE PID HERE 
+p=PID(3.0,0.4,1.2)
 
 #Reading cells from the first sheet:
 query_prefferedTemperatureValueColumn = gdata.spreadsheet.service.CellQuery()
@@ -41,70 +45,73 @@ query_prefferedTempperatureTimeLeftColumn.max_col = '3'
 #### MAIN ####
 
 # niech będą na razie globalne jakieś :)
-prefferedTemperature = 0       # readed from spreadsheet, used by PID
+prefferedTemperature = 50       # readed from spreadsheet, used by PID
 airInflowLevel = 0              # updated by PID, sended to Copernicus
 lastPrefferedTempperatureValueColumn = 0       # last readed column to be updated if no connection to spreadsheet
 lastPrefferedTempperatureTimeLeftColumn = 0    # -//-
 
 currentTemperature = 20
 currentTime = 0
+currentTimeInMinutes = 0;
 
-# INITIALIZE PID HERE - probably sepparate thread 
 
-def temperature(cc):
+
+def PIDsetPrefferedTemperature(temperature):
+    p.setPoint(temperature)
+
+def temperature(cc):        # interpretation of received byte
     if 128 > cc > 63:
         return cc-63
+    return -1
 
-def PIDonTemperatureChanged(temperature):
-    print "to na razie mock, ja to robię, ewentualnie dostosuję jakoś " + temperature
-        
-
+ 
 while True:
-    # 1 read temperature
+    # 1: read temperature
     # cc = serial.read(1)
     # if temperature(cc) != currentTemperature:     # check, if readed byte is a new temperature value; if true, react
     #     currentTemperature = temperature(cc)
 
 
-
-
-    # 2 update current time, current temperature (if anything changed)
-    spr_client.UpdateCell(2, 9, currentTime, key)              # (row, col, val, key)
-    spr_client.UpdateCell(2, 10, currentTemperature, key)      # (row, col, val, key)
+    # 2: update current time, current temperature (if anything changed)
+    if currentTime == 0:
+        spr_client.UpdateCell(2, 9, currentTime, key)              # (row, col, val, key)
+    if currentTime % 10 == 0:
+        spr_client.UpdateCell(2, 10, currentTemperature, key)      # (row, col, val, key)
     
-    # 3 read columns: preferred temperatue, time left, find current pref. temper.
-    try:
-        prefferedTemperatureValueColumn = spr_client.GetCellsFeed(key, query=query_prefferedTemperatureValueColumn)
-        prefferedTemperatureTimeLeftColumn = spr_client.GetCellsFeed(key, query=query_prefferedTempperatureTimeLeftColumn)
-        
-        # it should be separate function probably:
-
-
-
+    # 3: read columns: preferred temperatue, time left, find current pref. temper.
+    if currentTime == 0:
+        try:
+            prefferedTemperatureValueColumn = spr_client.GetCellsFeed(key, query=query_prefferedTemperatureValueColumn)
+            prefferedTemperatureTimeLeftColumn = spr_client.GetCellsFeed(key, query=query_prefferedTempperatureTimeLeftColumn)
+            
 
             # search current preferred temperature (first record in TimeLeft column, that is not zero) read value and write it to preferredTemperature 
             
-    except:
-        print "no connection to spreadsheet"
-        # work on lastPrefferedTempperatureValueColumn and lastPrefferedTempperatureTimeLeftColumn
-        # do the same as in case of connection to internet ()it should be separate function probably)
+        except:
+            print "no connection to spreadsheet"
+            # work on lastPrefferedTempperatureValueColumn and lastPrefferedTempperatureTimeLeftColumn
+            # do the same as in case of connection to internet ()it should be separate function probably)
 
-    index = int(query_prefferedTemperatureValueColumn.min_row)
-    print index
-    for entry in prefferedTemperatureTimeLeftColumn.entry:
-        if entry != 0:
-            break
-        index += 1
+        index = 0
+        for entry in prefferedTemperatureTimeLeftColumn.entry:
+            if entry != 0:
+                break
+            index += 1
 
-    prefferedTemperature = prefferedTemperatureValueColumn[index]
-    if prefferedTemperature != currentTemperature: # abs() <
-        PIDonTemperatureChanged(prefferedTemperature)
+        prefferedTemperature = prefferedTemperatureValueColumn[index]
+        setPrefferedTemperature(prefferedTemperature)
 
 
-    # 4 move valve (servo on Copernicus) to the prescaled value (from airFlowLevel variable)
+    # 4: move valve (servo on Copernicus) to the prescaled value (from airFlowLevel variable)
+    airFlowLevel = p.update(currentTemperature)
     # serial.write(milijonpińcetjednostekobjetości)
+    
+    # 5: sleep
     time.sleep(1)
     currentTime += 1
+    if currentTime == 60 :
+        currentTime = 0
+        currentTimeInMinutes += 1
 
     
 
