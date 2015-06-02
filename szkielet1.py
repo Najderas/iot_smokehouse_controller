@@ -40,6 +40,16 @@ query_prefferedTempperatureTimeLeftColumn.max_col = '3'
 
 #### FUNCTIONS ####
 
+def PIDsetPrefferedTemperature(temperature):
+    p.setPoint(temperature)
+
+def PIDgetCalculatedValue(currentTemperature):
+    p.update(currentTemperature)
+    
+def temperature(cc):        # interpretation of received byte
+    if 128 > cc > 63:
+        return cc-63
+    return -1
 
 
 #### MAIN ####
@@ -55,15 +65,6 @@ currentTime = 0
 currentTimeInMinutes = 0;
 
 
-
-def PIDsetPrefferedTemperature(temperature):
-    p.setPoint(temperature)
-
-def temperature(cc):        # interpretation of received byte
-    if 128 > cc > 63:
-        return cc-63
-    return -1
-
  
 while True:
     # 1: read temperature
@@ -72,38 +73,39 @@ while True:
     #     currentTemperature = temperature(cc)
 
 
-    # 2: update current time, current temperature (if anything changed)
+    # 2: update current time, current temperature (every 10 seconds)
     if currentTime == 0:
         spr_client.UpdateCell(2, 9, currentTime, key)              # (row, col, val, key)
     if currentTime % 10 == 0:
         spr_client.UpdateCell(2, 10, currentTemperature, key)      # (row, col, val, key)
     
-    # 3: read columns: preferred temperatue, time left, find current pref. temper.
+    # 3: read columns: preferred temperature, time left, find current pref. temper.
     if currentTime == 0:
         try:
             prefferedTemperatureValueColumn = spr_client.GetCellsFeed(key, query=query_prefferedTemperatureValueColumn)
             prefferedTemperatureTimeLeftColumn = spr_client.GetCellsFeed(key, query=query_prefferedTempperatureTimeLeftColumn)
             
-
+            lastPrefferedTempperatureValueColumn = prefferedTemperatureValueColumn
+            lastPrefferedTempperatureTimeLeftColumn = prefferedTemperatureTimeLeftColumn
             # search current preferred temperature (first record in TimeLeft column, that is not zero) read value and write it to preferredTemperature 
             
         except:
             print "no connection to spreadsheet"
             # work on lastPrefferedTempperatureValueColumn and lastPrefferedTempperatureTimeLeftColumn
-            # do the same as in case of connection to internet ()it should be separate function probably)
+            
 
         index = 0
-        for entry in prefferedTemperatureTimeLeftColumn.entry:
+        for entry in lastPrefferedTemperatureTimeLeftColumn.entry:
             if entry != 0:
                 break
             index += 1
 
-        prefferedTemperature = prefferedTemperatureValueColumn[index]
-        setPrefferedTemperature(prefferedTemperature)
+        prefferedTemperature = lastPrefferedTemperatureValueColumn[index]
+        PIDsetPrefferedTemperature(prefferedTemperature)
 
 
     # 4: move valve (servo on Copernicus) to the prescaled value (from airFlowLevel variable)
-    airFlowLevel = p.update(currentTemperature)
+    airFlowLevel = PIDgetCalculatedValue(currentTemperature)
     # serial.write(milijonpińcetjednostekobjetości)
     
     # 5: sleep
