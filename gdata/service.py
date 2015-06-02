@@ -1067,6 +1067,7 @@ class GDataService(atom.service.AtomService):
 
     server_response = self.request('GET', uri, 
         headers=extra_headers)
+    print "uri "  + uri
     result_body = server_response.read()
 
     if server_response.status == 200:

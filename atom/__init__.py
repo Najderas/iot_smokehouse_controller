@@ -56,6 +56,7 @@ except ImportError:
       from elementtree import ElementTree
 import warnings
 
+import BeautifulSoup
 
 # XML namespaces which are often used in Atom entities.
 ATOM_NAMESPACE = 'http://www.w3.org/2005/Atom'
@@ -124,7 +125,19 @@ def CreateClassFromXMLString(target_class, xml_string, string_encoding=None):
   encoding = string_encoding or XML_STRING_ENCODING
   if encoding and isinstance(xml_string, unicode):
     xml_string = xml_string.encode(encoding)
-  tree = ElementTree.fromstring(xml_string)
+  # xml_string.replace()
+  with open("Output.xml", "w") as text_file:
+    text_file.write(xml_string)
+
+  f = open('Output.xml')
+  soup = BeautifulSoup.BeautifulSoup(f)
+  f.close()
+  g = open('a.xml', 'r')
+  # print >> g, soup.prettify()
+
+  # xml_string = soup.prettify()
+  tree = ElementTree.fromstring(g.read())
+  g.close()
   return _CreateClassFromElementTree(target_class, tree)
 
 
