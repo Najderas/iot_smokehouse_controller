@@ -5,10 +5,6 @@ from pseudo_pid_controller import PID
 import gspread
 from oauth2client.client import SignedJwtAssertionCredentials
 
-ATOM_NS = 'http://www.w3.org/2005/Atom'
-def _ns(name):
-    return '{%s}%s' % (ATOM_NS, name)
-
 json_key = json.load(open('SmokehouseController-5be721d918b4.json'))
 scope = ['https://spreadsheets.google.com/feeds']
 
@@ -19,15 +15,12 @@ credentials = SignedJwtAssertionCredentials(json_key['client_email'], json_key['
 gc = gspread.authorize(credentials)
 
 
-feed = gc.get_spreadsheets_feed()
-
+#feed = gc.get_spreadsheets_feed()
 # for elem in feed.findall(_ns('entry')):
 #     print elem.find(_ns('title')).text
 #
 # print gc.get_spreadsheets_feed()
-print "deb"
 worksheet = gc.open_by_key("1pzZBRAO7qukY5rArVy-YA1tSJ8zQ9Ihckl7degFTNdM").sheet1
-print "read" + worksheet.cell(2, 3).value
 
 
 #### INITIALIZE #####
@@ -61,14 +54,17 @@ min_row = 2
 #### FUNCTIONS ####
 
 def PIDsetPrefferedTemperature(temperature):
-    print "Going to set temperature to " + temperature
-    # p.setPoint(temperature)
+    print "Going to set temperature to " + temperature + "."
+    p.setPoint(temperature)
 
 
 def temperature(cc):  # interpretation of received byte
     if 128 > cc > 63:
         return 2 * (cc - 63)
     return -1
+
+def PIDgetCalculatedValue(currentTemperature):
+    p.update(currentTemperature)
 
 #### MAIN ####
 
@@ -110,7 +106,7 @@ while True:
             # prefferedTemperatureTimeLeftColumn = spr_client.GetCellsFeed(key,
             #                                                              query=query_prefferedTempperatureTimeLeftColumn)
             prefferedTemperatureTimeLeftColumn = worksheet.col_values(3)[min_row:]
-            print prefferedTemperatureTimeLeftColumn
+            #print prefferedTemperatureTimeLeftColumn
             # search current preferred temperature (first record in TimeLeft column, that is not zero) read value and write it to preferredTemperature
 
         except:
@@ -120,7 +116,7 @@ while True:
 
         index = 0
         for entry in prefferedTemperatureTimeLeftColumn: #.entry:
-            print entry
+            #print entry
             if int(entry) != 0:
                 break
             index += 1
@@ -130,7 +126,7 @@ while True:
 
 
     # 4: move valve (servo on Copernicus) to the prescaled value (from airFlowLevel variable)
-#    airFlowLevel = p.update(currentTemperature)
+    airFlowLevel = PIDgetCalculatedValue(int(currentTemperature))
 #    print airFlowLevel
     # serial.write(airFlowLevel * 31 / 100)
 
