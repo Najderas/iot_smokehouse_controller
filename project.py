@@ -1,9 +1,6 @@
 # -*- coding: utf-8 -*-
-import httplib2
 import json
 import time
-import gdata.spreadsheet.service
-from random import randint
 from pseudo_pid_controller import PID
 import gspread
 from oauth2client.client import SignedJwtAssertionCredentials
@@ -43,13 +40,13 @@ print "read" + worksheet.cell(2, 3).value
 # spr_client.source = 'Smokehouse controller project'
 # spr_client.ProgrammaticLogin()
 
-key = '1l4HCkPznHYz7vXUYBz1laL-IuIJWNh1U6ZAkwBIQyUs'
-
-http = httplib2.Http()
-http = credentials.authorize(http)
-auth2token = gdata.gauth.OAuth2TokenFromCredentials(credentials)
-spr_client = gdata.spreadsheet.service.SpreadsheetsService() # For example.
-spr_client = auth2token.authorize(spr_client)
+# key = '1l4HCkPznHYz7vXUYBz1laL-IuIJWNh1U6ZAkwBIQyUs'
+#
+# http = httplib2.Http()
+# http = credentials.authorize(http)
+# auth2token = gdata.gauth.OAuth2TokenFromCredentials(credentials)
+# spr_client = gdata.spreadsheet.service.SpreadsheetsService() # For example.
+# spr_client = auth2token.authorize(spr_client)
 
 # worksheets_feed = spr_client.GetWorksheetsFeed(key)
 
@@ -61,17 +58,17 @@ spr_client = auth2token.authorize(spr_client)
 p = PID(3.0, 0.4, 1.2)
 
 # Reading cells from the first sheet:
-query_prefferedTemperatureValueColumn = gdata.spreadsheet.service.CellQuery()
-query_prefferedTemperatureValueColumn.min_row = '3'
-query_prefferedTemperatureValueColumn.max_row = '14'
-query_prefferedTemperatureValueColumn.min_col = '1'
-query_prefferedTemperatureValueColumn.max_col = '1'
-
-query_prefferedTempperatureTimeLeftColumn = gdata.spreadsheet.service.CellQuery()
-query_prefferedTempperatureTimeLeftColumn.min_row = '3'
-query_prefferedTempperatureTimeLeftColumn.max_row = '14'
-query_prefferedTempperatureTimeLeftColumn.min_col = '3'
-query_prefferedTempperatureTimeLeftColumn.max_col = '3'
+# query_prefferedTemperatureValueColumn = gdata.spreadsheet.service.CellQuery()
+# query_prefferedTemperatureValueColumn.min_row = '3'
+# query_prefferedTemperatureValueColumn.max_row = '14'
+# query_prefferedTemperatureValueColumn.min_col = '1'
+# query_prefferedTemperatureValueColumn.max_col = '1'
+#
+# query_prefferedTempperatureTimeLeftColumn = gdata.spreadsheet.service.CellQuery()
+# query_prefferedTempperatureTimeLeftColumn.min_row = '3'
+# query_prefferedTempperatureTimeLeftColumn.max_row = '14'
+# query_prefferedTempperatureTimeLeftColumn.min_col = '3'
+# query_prefferedTempperatureTimeLeftColumn.max_col = '3'
 
 min_row = 2
 
