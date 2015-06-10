@@ -32,23 +32,6 @@ print "read" + worksheet.cell(2, 3).value
 
 #### INITIALIZE #####
 # connect to google spreadsheet
-# email = 'fourth.copernicus@gmail.com'
-# password = '%ku5Xw9h{5@Dyzt5'
-# spr_client = gdata.spreadsheet.service.SpreadsheetsService()
-# spr_client.email = email
-# spr_client.password = password
-# spr_client.source = 'Smokehouse controller project'
-# spr_client.ProgrammaticLogin()
-
-# key = '1l4HCkPznHYz7vXUYBz1laL-IuIJWNh1U6ZAkwBIQyUs'
-#
-# http = httplib2.Http()
-# http = credentials.authorize(http)
-# auth2token = gdata.gauth.OAuth2TokenFromCredentials(credentials)
-# spr_client = gdata.spreadsheet.service.SpreadsheetsService() # For example.
-# spr_client = auth2token.authorize(spr_client)
-
-# worksheets_feed = spr_client.GetWorksheetsFeed(key)
 
 # configure copernicus board
 # serial = s.Serial('/dev/ttyS0', 38400, timeout=1)
@@ -77,20 +60,6 @@ min_row = 2
 
 #### FUNCTIONS ####
 
-
-#### MAIN ####
-
-# niech będą na razie globalne jakieś :)
-prefferedTemperature = 50  # readed from spreadsheet, used by PID
-airInflowLevel = 0  # updated by PID, sended to Copernicus
-lastPrefferedTempperatureValueColumn = 0  # last readed column to be updated if no connection to spreadsheet
-lastPrefferedTempperatureTimeLeftColumn = 0  # -//-
-
-currentTemperature = 20
-currentTime = 0
-currentTimeInMinutes = 0
-
-
 def PIDsetPrefferedTemperature(temperature):
     print "Going to set temperature to " + temperature
     # p.setPoint(temperature)
@@ -101,6 +70,21 @@ def temperature(cc):  # interpretation of received byte
         return 2 * (cc - 63)
     return -1
 
+#### MAIN ####
+
+prefferedTemperature = 50  # readed from spreadsheet, used by PID
+airInflowLevel = 0  # updated by PID, sended to Copernicus
+lastPrefferedTempperatureValueColumn = 0  # last readed column to be updated if no connection to spreadsheet
+lastPrefferedTempperatureTimeLeftColumn = 0  # -//-
+
+currentTemperature = 20
+currentTime = 0
+currentTimeInMinutes = 0
+
+try:
+    currentTimeInMinutes = int(worksheet.cell(2, 9).value)
+except:
+    print "No connectionn to spreadsheet."
 
 while True:
     # 1: read temperature
@@ -108,7 +92,6 @@ while True:
     # temperature = temperature(cc);
     # if temperature > 0:     # check, if readed byte is a new temperature value; if true, react
     #     currentTemperature = temperature
-
 
     # 2: update current time, current temperature (if anything changed)
     if currentTime == 0:
@@ -131,7 +114,7 @@ while True:
             # search current preferred temperature (first record in TimeLeft column, that is not zero) read value and write it to preferredTemperature
 
         except:
-            print "no connection to spreadsheet"
+            print "No connection to spreadsheet."
             # work on lastPrefferedTempperatureValueColumn and lastPrefferedTempperatureTimeLeftColumn
             # do the same as in case of connection to internet ()it should be separate function probably)
 
