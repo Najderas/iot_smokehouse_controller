@@ -1,0 +1,12 @@
+download SetupTools
+https://pypi.python.org/pypi/setuptools 
+(direct adress: https://bootstrap.pypa.io/ez_setup.py)
+
+install SetupTools 
+python ez_setup.py --insecure
+
+
+install httplib2
+install six
+install pyOpenSSL
+install oauth2client
