@@ -1,0 +1,24 @@
+download SetupTools
+https://pypi.python.org/pypi/setuptools 
+(direct adress: https://bootstrap.pypa.io/ez_setup.py)
+
+install SetupTools 
+python ez_setup.py --insecure
+
+download pip
+https://pypi.python.org/pypi/pip/
+
+install pip (in pip directory)
+python setup.py install
+
+change date to current
+date -s "10 JUN 2015 14:34:00"
+
+install oauth2client
+pip install oauth2client
+
+/*
+install httplib2
+install six
+install pyOpenSSL
+*/
